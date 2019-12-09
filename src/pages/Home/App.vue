@@ -5,9 +5,10 @@
     <form action="game.html">
       <input type="submit" value="PLAy noW" />
     </form>
-    <a href="nnn.html">Play prototype</a>
-    <a href="">View on GitHub</a>
-    <a href="">Sponsor</a>
+    <a href="nnn.html">Play prototype</a> &#009;
+    <a href="https://github.com/yourWaifu/you-are-crazy-rich-game">View on GitHub</a> &#009;
+    <a href="https://github.com/sponsors/yourWaifu">Sponsor</a> &#009;
+    <br>
     This is just a school project to show off what I can do.
     <h2>About</h2>
     After spending lots of your money, you've destroyed some other's county's economy and now they are after you. You only have a month to spend all your money somehow.
