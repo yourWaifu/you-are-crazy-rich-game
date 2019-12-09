@@ -8,7 +8,6 @@
 	<!--Buildings-->
 	<br>
 	<p>Actions</p>
-	{{moneyGainedSinceTrade}}
 	<span 
 		v-for="(action, index) in availableActions"
 		v-on:click="doAction(index)"
