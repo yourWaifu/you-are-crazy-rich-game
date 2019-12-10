@@ -15,14 +15,6 @@
 	>
 		<button>{{action.name}} +{{action.profit}}{{currency}}</button>{{action.count}}
 	</span>
-	<!--
-	<button v-on:click=";">Make items on Amazon cheaper</button>
-	<button v-on:click=";">Less employees working in the warehouses</button>
-	<button v-on:click=";">Sell a Amazon warehouse</button>
-	<button v-on:click=";">Make AWS cheaper</button>
-	<button v-on:click=";">Make Amazon.com slower</button>
-	-->
-	<!--UPGRADES-->
 	<p>Upgrades</p>
 	<button 
 		v-for="(upgrade, index) in upgradesShop"
@@ -31,11 +23,6 @@
 	>
 		{{upgrade.name}} +{{upgrade.profit}}{{currency}}
 	</button>
-	<!--
-	<button v-on:click=";">Free 2 day shipping for everyone</button>
-	<button v-on:click=";">Shutdown down Amazon's website</button>
-	<button v-on:click=";">Shutdown down Amazon</button>
-	-->
   </div>
 </template>
 
