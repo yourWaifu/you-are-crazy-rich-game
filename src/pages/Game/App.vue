@@ -3,18 +3,11 @@
 	<h4>{{ message }}</h4>
 	<p>Money per second:<NumberDisplay :value=moneyGenRatePreSec></NumberDisplay>{{ currency }}</p>
 	<p>Money count:<NumberDisplay :value=moneyCountDisplay></NumberDisplay>{{ currency }}</p>
+	<LineChart v-if="loaded" :chart-data="moneyChartData" :options="moneyChartOptions" v-on:chart:update="onChartUpdated();"></LineChart>
 	<p>Time Left:<NumberDisplay :value=timeLeftDisplay></NumberDisplay>seconds</p>
 	<button v-on:click="onDonate();">Donate {{ donationPower }} {{ currency }}</button>
 	<!--Buildings-->
 	<br>
-	<p>Actions</p>
-	<span 
-		v-for="(action, index) in availableActions"
-		v-on:click="doAction(index)"
-		:key="'action' + action.id"
-	>
-		<button>{{action.name}} +{{action.profit}}{{currency}}</button>{{action.count}}
-	</span>
 	<p>Upgrades</p>
 	<button 
 		v-for="(upgrade, index) in upgradesShop"
@@ -23,13 +16,21 @@
 	>
 		{{upgrade.name}} +{{upgrade.profit}}{{currency}}
 	</button>
+	<p>Actions</p>
+	<span 
+		v-for="(action, index) in availableActions"
+		v-on:click="doAction(index)"
+		:key="'action' + action.id"
+	>
+		<button>{{action.name}} +{{action.profit}}{{currency}}</button>{{action.count}}
+	</span>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import NumberDisplay from './../../components/NumberDisplay.vue';
-import Bar from 'vue-chartjs';
+import LineChart from "./../../components/LineChart.vue";
 
 function lerp(oldValue: number, newValue: number, progress: number): number {
 	let delta: number = newValue - oldValue;
@@ -97,13 +98,16 @@ class UpgradeStats {
 
 @Component({
   components: {
-	NumberDisplay
+	NumberDisplay,
+	LineChart
   },
 })
 export default class App extends Vue {
 	moneyCount: number = 112000000000;
 	clock: number = 0;
-	timeLeft: number = 2629746;
+	readonly baseTimeLeft: number = 2629746
+	timeLeft: number = this.baseTimeLeft;
+	time: number = 0;
 	readonly baseMoneyGenRatePreSec: number = 3000;
 	moneyGenRatePreSec: number = this.baseMoneyGenRatePreSec;
 	moneyCountOnTrade: number = 0;
@@ -395,7 +399,45 @@ export default class App extends Vue {
 	timeLeftDisplay: string = String(this.timeLeft);
 
 	//chart UI
-	
+	moneyChartData : Chart.ChartData = {
+		datasets: [{
+			label: 'Money Count',
+			data: [{x: this.time, y: this.moneyCount}]
+		}]
+	}
+	moneyChartOptions : Chart.ChartOptions = {
+		responsive: true,
+		animation: {
+			duration: 0
+		},
+		scales: {
+			xAxes: [{
+				type: "linear",
+				display: true,
+				scaleLabel: {
+					display: true,
+					labelString: "Time"
+				}
+			}],
+			yAxes: [{
+				display: true,
+				scaleLabel: {
+					display: true
+				}
+			}]
+		},
+		tooltips: {
+			enabled: true
+		},
+		elements: {
+			point: {
+				backgroundColor: "000000"
+			}
+		},
+		maintainAspectRatio: false
+	};
+	loaded: boolean = false;
+	chartRendered: boolean = true;
 
 	onDonate(): void {
 		this.moneyCount -= this.donationPower;
@@ -428,6 +470,9 @@ export default class App extends Vue {
 		this.updateMoneyPerSec();
 		this.upgradesShop.splice(index, 1);
 	}
+	onChartUpdated() : void {
+		this.chartRendered = true;
+	}
 	onTick() : void {
 		//get delta time
 		let currentTimestamp = performance.now();
@@ -438,13 +483,14 @@ export default class App extends Vue {
 		this.oldTimeLeft = this.timeLeft;
 
 		//update game data
+		this.time += 1 * deltaTime;
 		this.moneyCount += this.moneyGenRatePreSec * deltaTime;
 		if (this.moneyGenRatePreSec <= 0 && this.moneyCount <= 0) {
 			this.hasWon = true;
 			this.message = "You've spent all your money!"
 		}
 		if (!this.hasFailed && !this.hasWon)
-			this.timeLeft -= 1 * deltaTime;
+			this.timeLeft = this.baseTimeLeft - this.time;
 
 		this.upgrades.forEach((upgrade:UpgradeStats, index:number): void => {
 			if (upgrade.canStart(this)) {
@@ -453,8 +499,22 @@ export default class App extends Vue {
 			}
 		})
 
-		this.moneyGainedSinceTrade = this.moneyCount - this.moneyCountOnTrade;
-
+		//update UI related values
+		if(
+			this.chartRendered
+			&& this.moneyChartData.datasets != undefined
+			&& this.moneyChartData.datasets[0].data != undefined
+		) {
+			let data: Chart.ChartPoint[] = this.moneyChartData.datasets[0].data as Chart.ChartPoint[];
+			this.moneyChartData = {
+				datasets: [{
+					label: 'Money Count',
+					data: data
+				}]
+			};
+			data.push({x: this.time, y: this.moneyCount});
+		}
+		
 		this.lastTickTimestamp = performance.now(); //needed for interpolation
 	}
 	onFrame(timestamp: DOMHighResTimeStamp) : void {
@@ -474,6 +534,7 @@ export default class App extends Vue {
 		this.onTick(); //setInterval doesn't call onTick right away
 		this.clock = setInterval(this.onTick, this.targetTickTime);
 		window.requestAnimationFrame(this.onFrame);
+		this.loaded = true;
 	}
 }
 </script>
