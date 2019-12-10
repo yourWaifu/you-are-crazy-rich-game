@@ -135,7 +135,7 @@ export default class App extends Vue {
 	currency: string = "\u{1f48e}";
 
 	actions: Array<ActionStats> = [
-		new ActionStats(ActionID.AutoDonator  , "Make an Auto Donator"        , 999999, 1/3600, 10           ),
+		new ActionStats(ActionID.AutoDonator  , "Make an Auto Donator"        , 999999, 2/3600, 10           ),
 		new ActionStats(ActionID.Stocks       , "Sell a stock"                , 999999, 1/36  , 1000         ),
 		new ActionStats(ActionID.CheaperPrime , "Make Amazon prime cheaper"   , 120   , 100/3 , 10000000     ),
 		new ActionStats(ActionID.CheaperItems , "Make items on Amazon cheaper", 999999, 1/3   , 10000000     ),
@@ -143,7 +143,7 @@ export default class App extends Vue {
 		new ActionStats(ActionID.SellWarehouse, "Sell a warehouse"            , 75    , 100   , 1000000000   ),
 		new ActionStats(ActionID.CheaperAWS   , "Lower AWS price"             , 999999, 50    , 1000000000000),
 		new ActionStats(ActionID.SlowerAmazonWebsite, "Throw away some Amazon servers", 999999, 100, 3000000000000),
-		new ActionStats(ActionID.ShutdownAmazon, "Enter the Amazon Shutdown Code", 1, 1000, 0)
+		new ActionStats(ActionID.ShutdownAmazon, "Enter the Amazon Shutdown Code", 1, 21000, 0)
 	];
 
 	availableActions: Array<ActionStats> = [];
@@ -219,6 +219,17 @@ export default class App extends Vue {
 			}
 		),
 		new UpgradeStats(
+			"Being a teir 7 donator",
+			16000000,
+			(game: App): boolean => {
+				return 640 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 4096;
+			},
+			(game: App): void => {
+				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 2;
+				game.donationPower = 16384;
+			}
+		),
+		new UpgradeStats(
 			"Start selling Stocks",
 			1000000,
 			(game: App): boolean => {
@@ -239,20 +250,87 @@ export default class App extends Vue {
 			}
 		),
 		new UpgradeStats(
+			"Invest in Kmart",
+			10000000,
+			(game: App): boolean => {
+				return 100 <= game.actions[ActionID.Stocks].count;
+			},
+			(game: App): void => {
+				game.actions[ActionID.Stocks].moneyLossPerSecond *= 2;
+			}
+		),
+		new UpgradeStats(
+			"Invest in Blockbuster",
+			50000000,
+			(game: App): boolean => {
+				return 200 <= game.actions[ActionID.Stocks].count;
+			},
+			(game: App): void => {
+				game.actions[ActionID.Stocks].moneyLossPerSecond *= 2;
+			}
+		),
+		new UpgradeStats(
+			"Invest in Forever 21",
+			100000000,
+			(game: App): boolean => {
+				return 400 <= game.actions[ActionID.Stocks].count;
+			},
+			(game: App): void => {
+				game.actions[ActionID.Stocks].moneyLossPerSecond *= 2;
+			}
+		),
+		new UpgradeStats(
+			"Invest in Sears",
+			500000000,
+			(game: App): boolean => {
+				return 800 <= game.actions[ActionID.Stocks].count;
+			},
+			(game: App): void => {
+				game.actions[ActionID.Stocks].moneyLossPerSecond *= 2;
+			}
+		),
+		new UpgradeStats(
 			"Start making prime cheaper",
 			10000000,
 			(game: App): boolean => {
-				return game.moneyGenRatePreSec <= 2995;
+				return game.moneyGenRatePreSec <= 2985;
 			},
 			(game: App): void => {
 				game.availableActions.push(this.actions[ActionID.CheaperPrime]);
 			}
 		),
 		new UpgradeStats(
+			"Prime is half off",
+			50000000,
+			(game: App): boolean => {
+				return 60 <= game.actions[ActionID.CheaperPrime].count;
+			},
+			(game: App): void => {
+				game.actions[ActionID.CheaperPrime].moneyLossPerSecond *= 2;
+			}
+		),
+		new UpgradeStats(
+			"Prime is free for everyone!",
+			0,
+			(game: App): boolean => {
+				return game.actions[ActionID.CheaperPrime].maxCount <= game.actions[ActionID.CheaperPrime].count;
+			},
+			(game: App): void => {
+				game.actions[ActionID.CheaperPrime].moneyLossPerSecond *= 2;
+				//remove from UI
+				let index: number = game.availableActions.indexOf(game.actions[ActionID.CheaperPrime]);
+				if (index < -1) {
+					window.console.error("Can't make remove Prime from avaiable actions")
+					return;
+				}
+				game.availableActions.splice(index, 1);
+			}
+		),
+		new UpgradeStats(
 			"Start making items cheaper on amazon",
 			100000000,
 			(game: App): boolean => {
-				return game.moneyGenRatePreSec <= 2500;
+				return game.moneyGenRatePreSec <= -13500;
 			},
 			(game: App): void => {
 				game.availableActions.push(this.actions[ActionID.CheaperItems]);
@@ -262,7 +340,7 @@ export default class App extends Vue {
 			"Start firing employees",
 			1000000,
 			(game: App): boolean => {
-				return game.moneyGenRatePreSec <= 2990;
+				return game.moneyGenRatePreSec <= -4050;
 			},
 			(game: App): void => {
 				game.availableActions.push(this.actions[ActionID.LessEmployees]);
@@ -272,17 +350,29 @@ export default class App extends Vue {
 			"Start selling warehouses",
 			1000000000000,
 			(game: App): boolean => {
-				return game.moneyGenRatePreSec <= 2000;
+				return game.moneyGenRatePreSec <= -13327;
 			},
 			(game: App): void => {
 				game.availableActions.push(this.actions[ActionID.SellWarehouse]);
 			}
 		),
 		new UpgradeStats(
+			"Sell all warehouses",
+			0,
+			(game: App): boolean => {
+				return game.actions[ActionID.SellWarehouse].maxCount <= game.actions[ActionID.SellWarehouse].count;
+			},
+			(game: App): void => {
+				game.availableActions.push(this.actions[ActionID.SellWarehouse]);
+				//remove from UI, for some reason just using filter doesn't work
+				game.availableActions = game.availableActions.filter(item => item != game.actions[ActionID.SellWarehouse]);
+			}
+		),
+		new UpgradeStats(
 			"Start lowering the price of AWS",
 			1000000000000,
 			(game: App): boolean => {
-				return game.moneyGenRatePreSec <= 1000;
+				return game.moneyGenRatePreSec <= -21000;
 			},
 			(game: App): void => {
 				game.availableActions.push(this.actions[ActionID.CheaperAWS]);
@@ -292,7 +382,7 @@ export default class App extends Vue {
 			"Start thowing away Amazon's server",
 			5000000000000,
 			(game: App): boolean => {
-				return game.moneyGenRatePreSec <= -2000;
+				return game.moneyGenRatePreSec <= -26000;
 			},
 			(game: App): void => {
 				game.availableActions.push(this.actions[ActionID.SlowerAmazonWebsite]);
@@ -302,7 +392,7 @@ export default class App extends Vue {
 			"Shutdown the Amazon company",
 			5000000000000,
 			(game: App): boolean => {
-				return game.moneyGenRatePreSec <= -24000;
+				return game.moneyGenRatePreSec <= -42125;
 			},
 			(game: App): void => {
 				game.availableActions.push(this.actions[ActionID.ShutdownAmazon]);
