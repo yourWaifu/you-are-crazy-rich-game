@@ -8,14 +8,6 @@
 	<button v-on:click="onDonate();">Donate {{ donationPower }} {{ currency }}</button>
 	<!--Buildings-->
 	<br>
-	<p>Actions</p>
-	<span 
-		v-for="(action, index) in availableActions"
-		v-on:click="doAction(index)"
-		:key="'action' + action.id"
-	>
-		<button>{{action.name}} +{{action.profit}}{{currency}}</button>{{action.count}}
-	</span>
 	<p>Upgrades</p>
 	<button 
 		v-for="(upgrade, index) in upgradesShop"
@@ -24,6 +16,14 @@
 	>
 		{{upgrade.name}} +{{upgrade.profit}}{{currency}}
 	</button>
+	<p>Actions</p>
+	<span 
+		v-for="(action, index) in availableActions"
+		v-on:click="doAction(index)"
+		:key="'action' + action.id"
+	>
+		<button>{{action.name}} +{{action.profit}}{{currency}}</button>{{action.count}}
+	</span>
   </div>
 </template>
 
@@ -105,7 +105,9 @@ class UpgradeStats {
 export default class App extends Vue {
 	moneyCount: number = 112000000000;
 	clock: number = 0;
-	timeLeft: number = 2629746;
+	readonly baseTimeLeft: number = 2629746
+	timeLeft: number = this.baseTimeLeft;
+	time: number = 0;
 	readonly baseMoneyGenRatePreSec: number = 3000;
 	moneyGenRatePreSec: number = this.baseMoneyGenRatePreSec;
 	moneyCountOnTrade: number = 0;
@@ -400,10 +402,39 @@ export default class App extends Vue {
 	moneyChartData : Chart.ChartData = {
 		datasets: [{
 			label: 'Money Count',
-			data: [this.moneyCount]
+			data: [{x: this.time, y: this.moneyCount}]
 		}]
 	}
 	moneyChartOptions : Chart.ChartOptions = {
+		responsive: true,
+		animation: {
+			duration: 0
+		},
+		scales: {
+			xAxes: [{
+				type: "linear",
+				display: true,
+				scaleLabel: {
+					display: true,
+					labelString: "Time"
+				}
+			}],
+			yAxes: [{
+				display: true,
+				scaleLabel: {
+					display: true
+				}
+			}]
+		},
+		tooltips: {
+			enabled: true
+		},
+		elements: {
+			point: {
+				backgroundColor: "000000"
+			}
+		},
+		maintainAspectRatio: false
 	};
 	loaded: boolean = false;
 	chartRendered: boolean = true;
@@ -452,13 +483,14 @@ export default class App extends Vue {
 		this.oldTimeLeft = this.timeLeft;
 
 		//update game data
+		this.time += 1 * deltaTime;
 		this.moneyCount += this.moneyGenRatePreSec * deltaTime;
 		if (this.moneyGenRatePreSec <= 0 && this.moneyCount <= 0) {
 			this.hasWon = true;
 			this.message = "You've spent all your money!"
 		}
 		if (!this.hasFailed && !this.hasWon)
-			this.timeLeft -= 1 * deltaTime;
+			this.timeLeft = this.baseTimeLeft - this.time;
 
 		this.upgrades.forEach((upgrade:UpgradeStats, index:number): void => {
 			if (upgrade.canStart(this)) {
@@ -467,24 +499,20 @@ export default class App extends Vue {
 			}
 		})
 
-		this.moneyGainedSinceTrade = this.moneyCount - this.moneyCountOnTrade;
-
 		//update UI related values
 		if(
 			this.chartRendered
 			&& this.moneyChartData.datasets != undefined
 			&& this.moneyChartData.datasets[0].data != undefined
-			&& typeof this.moneyChartData.datasets[0].data[0] == "number"
 		) {
-			let data: number[] = this.moneyChartData.datasets[0].data as number[];
+			let data: Chart.ChartPoint[] = this.moneyChartData.datasets[0].data as Chart.ChartPoint[];
 			this.moneyChartData = {
 				datasets: [{
 					label: 'Money Count',
 					data: data
 				}]
 			};
-			data.push(this.moneyCount);
-			//this.chartRendered = false;
+			data.push({x: this.time, y: this.moneyCount});
 		}
 		
 		this.lastTickTimestamp = performance.now(); //needed for interpolation
