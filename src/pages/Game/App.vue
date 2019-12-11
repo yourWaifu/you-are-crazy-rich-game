@@ -150,74 +150,74 @@ export default class App extends Vue {
 				return 10 <= game.actions[ActionID.AutoDonator].count;
 			},
 			(game: App): void => {
-				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 2;
-				game.donationPower = 8;
+				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 8;
+				game.donationPower = 16;
 			}
 		),
 		new UpgradeStats(
 			"Being a teir 3 donator",
 			1000000,
 			(game: App): boolean => {
-				return 20 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 8;
+				return 20 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 16;
 			},
 			(game: App): void => {
-				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 2;
-				game.donationPower = 16;
+				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 8;
+				game.donationPower = 128;
 			}
 		),
 		new UpgradeStats(
 			"Being a teir 4 donator",
 			2000000,
 			(game: App): boolean => {
-				return 40 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 16;
+				return 40 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 128;
 			},
 			(game: App): void => {
-				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 2;
-				game.donationPower = 64;
+				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 4;
+				game.donationPower = 1024;
 			}
 		),
 		new UpgradeStats(
 			"Being a teir 5 donator",
 			4000000,
 			(game: App): boolean => {
-				return 80 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 64;
+				return 80 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 1024;
 			},
 			(game: App): void => {
-				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 2;
-				game.donationPower = 256;
+				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 4;
+				game.donationPower = 8192;
 			}
 		),
 		new UpgradeStats(
 			"Being a teir 6 donator",
 			8000000,
 			(game: App): boolean => {
-				return 160 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 256;
+				return 160 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 8192;
 			},
 			(game: App): void => {
-				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 2;
-				game.donationPower = 1024;
+				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 4;
+				game.donationPower = 65536;
 			}
 		),
 		new UpgradeStats(
 			"Being a teir 7 donator",
 			16000000,
 			(game: App): boolean => {
-				return 320 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 1024;
+				return 320 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 65536;
 			},
 			(game: App): void => {
 				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 2;
-				game.donationPower = 4096;
+				game.donationPower = 524288;
 			}
 		),
 		new UpgradeStats(
 			"Being a teir 7 donator",
 			16000000,
 			(game: App): boolean => {
-				return 640 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 4096;
+				return 640 <= game.actions[ActionID.AutoDonator].count && game.donationPower == 524288;
 			},
 			(game: App): void => {
 				game.actions[ActionID.AutoDonator].moneyLossPerSecond *= 2;
-				game.donationPower = 16384;
+				game.donationPower = 524288;
 			}
 		),
 		new UpgradeStats(
