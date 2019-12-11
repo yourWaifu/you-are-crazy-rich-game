@@ -432,6 +432,9 @@ export default class App extends Vue {
 		elements: {
 			point: {
 				backgroundColor: "000000"
+			},
+			line: {
+				tension: 0
 			}
 		},
 		maintainAspectRatio: false
@@ -506,13 +509,28 @@ export default class App extends Vue {
 			&& this.moneyChartData.datasets[0].data != undefined
 		) {
 			let data: Chart.ChartPoint[] = this.moneyChartData.datasets[0].data as Chart.ChartPoint[];
+			//remove data that is too old
+			data = data.filter((value, index) => {
+				return value.x !== undefined ?
+					(this.time - (60 * 2)) < value.x ?
+						(this.time - (60 * 1.5)) < value.x ?
+							(this.time - (60)) < value.x ?
+								true
+							: Math.floor(value.x as number) % 3
+						: Math.floor(value.x as number) % 2
+					: false
+				: false;
+			});
+			//add new data
+			data.push({x: this.time, y: this.moneyCount});
+			//set the data
 			this.moneyChartData = {
 				datasets: [{
 					label: 'Money Count',
+					fill: false,
 					data: data
 				}]
 			};
-			data.push({x: this.time, y: this.moneyCount});
 		}
 		
 		this.lastTickTimestamp = performance.now(); //needed for interpolation
