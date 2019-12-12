@@ -14,7 +14,7 @@
 		v-on:click="buyUpgrade(index)"
 		:key="upgrade.name"
 	>
-		{{upgrade.name}} +{{upgrade.profit}}{{currency}}
+		{{upgrade.name}} +{{formatNumberToSI(upgrade.profit)}}{{currency}}
 	</button>
 	<p>Actions</p>
 	<span 
@@ -22,7 +22,7 @@
 		v-on:click="doAction(index)"
 		:key="'action' + action.id"
 	>
-		<button>{{action.name}} +{{action.profit}}{{currency}}</button>{{action.count}}
+		<button>{{action.name}} +{{formatNumberToSI(action.profit, (value) => value.toFixed(2))}}{{currency}}</button>{{action.count}}
 	</span>
   </div>
 </template>
@@ -94,6 +94,11 @@ class UpgradeStats {
 		this.canStart = _canStart;
 		this.doUpgrade = _doUpgrade;
 	}
+}
+
+interface MetricPrefix {
+	symbol: string;
+	base10: number;
 }
 
 @Component({
@@ -339,7 +344,7 @@ export default class App extends Vue {
 		),
 		new UpgradeStats(
 			"Start selling warehouses",
-			1000000000000,
+			1000000000,
 			(game: App): boolean => {
 				return game.moneyGenRatePreSec <= -13327;
 			},
@@ -361,7 +366,7 @@ export default class App extends Vue {
 		),
 		new UpgradeStats(
 			"Start lowering the price of AWS",
-			1000000000000,
+			10000000000,
 			(game: App): boolean => {
 				return game.moneyGenRatePreSec <= -21000;
 			},
@@ -371,7 +376,7 @@ export default class App extends Vue {
 		),
 		new UpgradeStats(
 			"Start thowing away Amazon's server",
-			5000000000000,
+			50000000000,
 			(game: App): boolean => {
 				return game.moneyGenRatePreSec <= -26000;
 			},
@@ -381,7 +386,7 @@ export default class App extends Vue {
 		),
 		new UpgradeStats(
 			"Shutdown the Amazon company",
-			5000000000000,
+			500000000000,
 			(game: App): boolean => {
 				return game.moneyGenRatePreSec <= -42125;
 			},
@@ -392,6 +397,27 @@ export default class App extends Vue {
 	];
 
 	//variables used for rendering or UI
+	sIPrefixes : readonly MetricPrefix[] = [
+		{symbol: "Z", base10: 1e21}, //use this as max
+		{symbol: "E", base10: 1e18},
+		{symbol: "P", base10: 1e15},
+		{symbol: "T", base10: 1e12},
+		{symbol: "G", base10: 1e9 },
+		{symbol: "M", base10: 1e6 },
+		{symbol: "k", base10: 1e3 },
+	];
+
+	formatNumberToSI(num:number, callback: (num:number) => string = (num)=>String(num)): string {
+		if (this.sIPrefixes[0].base10 <= num) //special case
+			return callback(num);
+		for (let i = 1; i < (this.sIPrefixes.length); i++) {
+			if (this.sIPrefixes[i].base10 <= num) {
+				return callback(num / this.sIPrefixes[i].base10) + this.sIPrefixes[i].symbol;
+			}
+		}
+		return callback(num);
+	}
+
 	lastTickTimestamp: DOMHighResTimeStamp = 0;
 	oldMoneyCount: number = this.moneyCount; //used for interploation
 	moneyCountDisplay: string = String(this.moneyCount);
@@ -423,6 +449,9 @@ export default class App extends Vue {
 				display: true,
 				scaleLabel: {
 					display: true
+				},
+				ticks: {
+					callback: (value: number) => this.formatNumberToSI(value)
 				}
 			}]
 		},
